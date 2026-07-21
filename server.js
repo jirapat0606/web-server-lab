@@ -11,12 +11,12 @@ res.statusCode = 200;
 res.setHeader('Content-Type', 'text/html; charset=utf-8');
 
 try {
-// 3. ขอเชื่อมต่อและสงคําสั่ง SQL ไปดึงขอมูลจากตาราง students
+// 3. ขอเชื่อมต่อและสงคําสั่ง SQL ไปดึงข้อมูลจากตาราง students
 const client = await pool.connect();
 const result = await client.query('SELECT * FROM students');
 client.release(); // คนืการเชื่อมต่อเมื่อใช้งานเสร็จ
-// 4. นําข้อมูลที่ได้(result.rows) มาประกอบเปนตาราง HTML
-let html = `<h1>ฐานขอมูลนักศึกษา (ทดสอบการเชื่อมตอ)</h1>`;
+// 4. นําข้อมูลที่ได้(result.rows) มาประกอบเป็นตาราง HTML
+let html = `<h1>ฐานข้อมูลนักศึกษา (ทดสอบการเชื่อมตอ)</h1>`;
 html += `<table border="1" cellpadding="10">`;
 html += `<tr><th>รหัสนักศึกษา</th><th>ชื่อ-นามสกุล</th></tr>`;
 // วนลูปนําข้อมูลแต่ละแถวมาแสดง
