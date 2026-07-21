@@ -1,84 +1,36 @@
 const http = require('http');
-
-// Render จะกำหนด Port มาให้ผ่าน process.env.PORT อัตโนมัติ
-const PORT = process.env.PORT || 3000;
-
-const server = http.createServer((req, res) => {
-    // ตั้งค่า Header ให้ตอบกลับเป็น HTML และรองรับภาษาไทย (UTF-8)
-    res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'});
-    
-    // หน้าตาหน้าเว็บแบบ Modern Card 
-    const htmlOutput = `
-    <!DOCTYPE html>
-    <html lang="th">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Web Server Assignment</title>
-        <style>
-            * { box-sizing: border-box; margin: 0; padding: 0; }
-            body {
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                background: linear-gradient(135deg, #e0eafc, #cfdef3);
-                min-height: 100vh;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                color: #333;
-            }
-            .card {
-                background: white;
-                padding: 2.5rem;
-                border-radius: 16px;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-                text-align: center;
-                max-width: 450px;
-                width: 90%;
-                border-top: 6px solid #4a90e2;
-            }
-            h1 { font-size: 1.6rem; color: #2c3e50; margin-bottom: 1.5rem; }
-            .info-container {
-                background: #f8f9fa;
-                padding: 1.2rem;
-                border-radius: 10px;
-                text-align: left;
-                border-left: 4px solid #4a90e2;
-                margin-bottom: 1.5rem;
-            }
-            p { font-size: 1.05rem; margin-bottom: 0.6rem; }
-            p:last-child { margin-bottom: 0; }
-            .label { color: #7f8c8d; font-weight: bold; }
-            .value { color: #2c3e50; margin-left: 5px; }
-            .badge {
-                display: inline-block;
-                padding: 0.35rem 0.8rem;
-                background: #2ecc71;
-                color: white;
-                border-radius: 50px;
-                font-size: 0.85rem;
-                font-weight: bold;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="card">
-            <h1>ใบงานปฏิบัติการ: Web Server</h1>
-            <div class="info-container">
-                <p><span class="label">รหัสนักศึกษา:</span> <span class="value">69319011594</span></p>
-                <p><span class="label">ชื่อ-นามสกุล:</span> <span class="value">[YOUR NAME]</span></p>
-                <p><span class="label">สาขา / ชั้นปี:</span> <span class="value">[YOUR INFO]</span></p>
-                <p><span class="label">โครงการ:</span> <span class="value">Web Server Lab</span></p>
-                <p><span class="label">พอร์ต:</span> <span class="value">\${PORT}</span></p>
-            </div>
-            <span class="badge">● Server Online</span>
-        </div>
-    </body>
-    </html>
-    `;
-    
-    res.end(htmlOutput);
+// 1. เรียกใชงาน Pool จากไลบรารี pg สําหรับจัดการการเชื่อมตอฐานขอมูล
+const { Pool } = require('pg');
+// 2. ตั้งคาการเชื่อมตอ โดยดึง URL มาจาก Environment Variable ของ Railway
+const pool = new Pool({
+connectionString: process.env.DATABASE_URL,
 });
+const port = process.env.PORT || 3000;
+const server = http.createServer(async (req, res) => {
+res.statusCode = 200;
+res.setHeader('Content-Type', 'text/html; charset=utf-8');
 
-server.listen(PORT, () => {
-    console.log(\`Server is running on port \${PORT}\`);
+try {
+// 3. ขอเชื่อมตอและสงคําสั่ง SQL ไปดึงขอมูลจากตาราง students
+const client = await pool.connect();
+const result = await client.query('SELECT * FROM students');
+client.release(); // คนืการเชื่อมตอเมื่อใชงานเสร็จ
+// 4. นําขอมูลที่ได(result.rows) มาประกอบเปนตาราง HTML
+let html = `<h1>ฐานขอมูลนักศึกษา (ทดสอบการเชื่อมตอ)</h1>`;
+html += `<table border="1" cellpadding="10">`;
+html += `<tr><th>รหัสนักศึกษา</th><th>ชื่อ-นามสกุล</th></tr>`;
+// วนลูปนําขอมูลแตละแถวมาแสดง
+result.rows.forEach(row => {
+html += `<tr><td>${row.student_id}</td><td>${row.tudent_name}</td></tr>`;
+});
+html += `</table>`;
+res.end(html);
+} catch (err) {
+// กรณเีชื่อมตอไมไดหรือเขียนชื่อตารางผิด
+console.error(err);
+res.end(`<h1>เกิดขอผิดพลาด!</h1><p>${err.message}</p>`);
+}
+});
+server.listen(port, () => {
+console.log(`Server is running on port: ${port}`);
 });
