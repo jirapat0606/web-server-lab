@@ -22,7 +22,7 @@ let html = `
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ฐานขอมูลนักศึกษา</title>
+  <title>ฐานขอมูลนักศึกษา - Minecraft Style</title>
   <style>
     * {
       margin: 0;
@@ -31,160 +31,183 @@ let html = `
     }
     
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #000814;
+      font-family: 'Minecraft', 'Press Start 2P', monospace;
+      background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 100%);
       min-height: 100vh;
       display: flex;
       justify-content: center;
-      align-items: center;
-      padding: 20px;
+      align-items: flex-start;
+      padding: 40px 20px 20px;
       position: relative;
-      overflow: hidden;
+      overflow-x: hidden;
     }
     
-    /* ดวงอาทิตย์ */
+    /* Sky */
     body::before {
       content: '';
       position: fixed;
-      width: 150px;
-      height: 150px;
-      background: radial-gradient(circle at 30% 30%, #ffd700, #ffb300);
-      border-radius: 50%;
-      top: 5%;
-      right: 10%;
-      box-shadow: 0 0 80px 40px rgba(255, 215, 0, 0.5);
-      z-index: 1;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60%;
+      background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 100%);
+      z-index: -2;
     }
     
-    /* โลก */
+    /* Grass and dirt ground */
     body::after {
       content: '';
       position: fixed;
-      width: 200px;
-      height: 200px;
-      background: radial-gradient(circle at 35% 35%, #4a90e2, #1e88e5, #0d47a1);
-      border-radius: 50%;
-      bottom: 10%;
-      left: 5%;
-      box-shadow: 0 0 60px 30px rgba(74, 144, 226, 0.4), inset -20px -20px 40px rgba(0, 0, 0, 0.4);
-      z-index: 1;
-      background-image: 
-        radial-gradient(circle at 35% 35%, #4a90e2, #1e88e5, #0d47a1);
-    }
-    
-    /* ดาวอังคาร */
-    .mars {
-      position: fixed;
-      width: 120px;
-      height: 120px;
-      background: radial-gradient(circle at 40% 40%, #e27b58, #c1502e, #8b3a1f);
-      border-radius: 50%;
-      top: 15%;
-      left: 8%;
-      box-shadow: 0 0 50px 25px rgba(226, 123, 88, 0.3);
-      z-index: 1;
-    }
-    
-    /* ดาวพื้นหลัง */
-    .stars {
-      position: fixed;
-      top: 0;
+      bottom: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 0;
+      right: 0;
+      height: 40%;
+      background: linear-gradient(180deg, #90EE90 0%, #7CB342 50%, #6D4C41 100%);
+      z-index: -2;
     }
     
-    .star {
-      position: absolute;
-      width: 2px;
-      height: 2px;
+    /* Clouds */
+    .cloud {
+      position: fixed;
       background: white;
-      border-radius: 50%;
-      animation: twinkle 3s infinite;
+      border-radius: 50px;
+      opacity: 0.9;
+      z-index: 1;
     }
     
-    @keyframes twinkle {
-      0%, 100% { opacity: 0.3; }
-      50% { opacity: 1; }
+    .cloud1 {
+      width: 120px;
+      height: 40px;
+      top: 10%;
+      left: 5%;
+      animation: float 20s infinite;
+    }
+    
+    .cloud2 {
+      width: 150px;
+      height: 50px;
+      top: 20%;
+      right: 5%;
+      animation: float 25s infinite reverse;
+    }
+    
+    .cloud3 {
+      width: 100px;
+      height: 35px;
+      top: 15%;
+      left: 50%;
+      animation: float 22s infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(30px); }
     }
     
     .container {
-      background: rgba(20, 20, 40, 0.9);
-      border-radius: 20px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8),
-                  0 0 40px rgba(74, 144, 226, 0.4);
+      background: #1a1a1a;
+      border: 4px solid #8B4513;
       padding: 40px;
       max-width: 900px;
       width: 100%;
-      backdrop-filter: blur(10px);
-      border: 2px solid rgba(74, 144, 226, 0.5);
       position: relative;
-      z-index: 2;
+      z-index: 10;
+      box-shadow: 
+        0 0 0 8px #654321,
+        0 20px 0 0 rgba(0, 0, 0, 0.3);
+      border-image: linear-gradient(135deg, #D2B48C, #8B4513) 1;
     }
     
     h1 {
-      color: #4a90e2;
+      color: #FFD700;
       text-align: center;
       margin-bottom: 30px;
-      font-size: 2.2em;
-      text-shadow: 0 0 20px rgba(74, 144, 226, 0.8);
-      letter-spacing: 2px;
+      font-size: 2em;
+      text-shadow: 3px 3px 0 #000, 6px 6px 0 rgba(0, 0, 0, 0.5);
+      letter-spacing: 3px;
+      font-weight: bold;
     }
     
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
+      background: #2d2d2d;
     }
     
     thead {
-      background: linear-gradient(135deg, rgba(74, 144, 226, 0.6) 0%, rgba(30, 136, 229, 0.6) 100%);
-      color: #ffffff;
-      border-bottom: 2px solid rgba(74, 144, 226, 0.8);
+      background: linear-gradient(180deg, #CD853F 0%, #8B4513 100%);
+      color: #FFFACD;
+      border: 3px solid #654321;
     }
     
     th {
       padding: 15px;
       text-align: left;
-      font-weight: 600;
-      font-size: 1.05em;
-      letter-spacing: 0.5px;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+      font-weight: bold;
+      font-size: 1em;
+      letter-spacing: 2px;
+      text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+      border-right: 2px solid #654321;
+    }
+    
+    th:last-child {
+      border-right: none;
     }
     
     tbody tr {
-      border-bottom: 1px solid rgba(74, 144, 226, 0.3);
-      transition: all 0.3s ease;
+      border-bottom: 3px solid #654321;
+      transition: all 0.1s ease;
+      background: #2d2d2d;
     }
     
     tbody tr:hover {
-      background: rgba(74, 144, 226, 0.2);
-      transform: translateX(5px);
-      box-shadow: inset 0 0 20px rgba(74, 144, 226, 0.2);
+      background: #3a3a3a;
+      transform: translateY(-2px);
+      box-shadow: inset 0 0 10px rgba(205, 133, 63, 0.3);
+    }
+    
+    tbody tr:nth-child(odd) {
+      background: #1a1a1a;
+    }
+    
+    tbody tr:nth-child(odd):hover {
+      background: #252525;
     }
     
     tbody tr:last-child {
-      border-bottom: none;
+      border-bottom: 3px solid #654321;
     }
     
     td {
       padding: 15px;
-      color: #e0e0e0;
-      font-size: 1em;
+      color: #E0E0E0;
+      font-size: 0.95em;
+      border-right: 1px solid #654321;
+      font-family: 'Courier New', monospace;
     }
     
-    tbody tr:nth-child(odd) {
-      background-color: rgba(74, 144, 226, 0.1);
+    td:last-child {
+      border-right: none;
+    }
+    
+    /* Pixel art style */
+    @supports (-webkit-appearance:none) {
+      th, td {
+        image-rendering: pixelated;
+        image-rendering: -moz-crisp-edges;
+        image-rendering: crisp-edges;
+      }
     }
     
     @media (max-width: 600px) {
       .container {
         padding: 20px;
+        border-width: 3px;
       }
       
       h1 {
-        font-size: 1.6em;
+        font-size: 1.4em;
       }
       
       table {
@@ -193,30 +216,22 @@ let html = `
       
       th, td {
         padding: 10px;
+        font-size: 0.9em;
       }
       
-      body::before {
-        width: 100px;
-        height: 100px;
-      }
-      
-      body::after {
-        width: 140px;
-        height: 140px;
-      }
-      
-      .mars {
-        width: 80px;
-        height: 80px;
-      }
+      .cloud1 { width: 80px; height: 30px; }
+      .cloud2 { width: 100px; height: 35px; }
+      .cloud3 { width: 70px; height: 25px; }
     }
   </style>
 </head>
 <body>
-  <div class="mars"></div>
-  <div class="stars" id="stars"></div>
+  <div class="cloud cloud1"></div>
+  <div class="cloud cloud2"></div>
+  <div class="cloud cloud3"></div>
+  
   <div class="container">
-    <h1>🚀 ฐานขอมูลนักศึกษา</h1>
+    <h1>⛏️ ฐานขอมูลนักศึกษา ⛏️</h1>
     <table>
       <thead>
         <tr>
@@ -236,19 +251,6 @@ html += \`
       </tbody>
     </table>
   </div>
-  
-  <script>
-    // สร้างดาวแบบสุ่ม
-    const starsContainer = document.getElementById('stars');
-    for (let i = 0; i < 100; i++) {
-      const star = document.createElement('div');
-      star.className = 'star';
-      star.style.left = Math.random() * 100 + '%';
-      star.style.top = Math.random() * 100 + '%';
-      star.style.animationDelay = Math.random() * 3 + 's';
-      starsContainer.appendChild(star);
-    }
-  </script>
 </body>
 </html>
 \`;
@@ -263,11 +265,17 @@ res.end(\`
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>เกิดข้อผิดพลาด</title>
+  <title>เกิดข้อผิดพลาด - Minecraft</title>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #000814;
+      font-family: 'Minecraft', 'Press Start 2P', monospace;
+      background: linear-gradient(180deg, #FF6B6B 0%, #FFB3B3 100%);
       min-height: 100vh;
       display: flex;
       justify-content: center;
@@ -280,62 +288,61 @@ res.end(\`
     body::before {
       content: '';
       position: fixed;
-      width: 150px;
-      height: 150px;
-      background: radial-gradient(circle at 30% 30%, #ffd700, #ffb300);
-      border-radius: 50%;
-      top: 5%;
-      right: 10%;
-      box-shadow: 0 0 80px 40px rgba(255, 215, 0, 0.5);
-      z-index: 1;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60%;
+      background: linear-gradient(180deg, #FF6B6B 0%, #FFB3B3 100%);
+      z-index: -1;
     }
     
-    .mars {
+    body::after {
+      content: '';
       position: fixed;
-      width: 120px;
-      height: 120px;
-      background: radial-gradient(circle at 40% 40%, #e27b58, #c1502e, #8b3a1f);
-      border-radius: 50%;
-      top: 15%;
-      left: 8%;
-      box-shadow: 0 0 50px 25px rgba(226, 123, 88, 0.3);
-      z-index: 1;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 40%;
+      background: linear-gradient(180deg, #FFB3B3 0%, #D32F2F 50%, #8B0000 100%);
+      z-index: -1;
     }
     
     .error-container {
-      background: rgba(20, 20, 40, 0.9);
-      border-radius: 20px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(226, 48, 49, 0.4);
+      background: #1a1a1a;
+      border: 4px solid #8B0000;
       padding: 40px;
       max-width: 600px;
       text-align: center;
-      border: 2px solid rgba(226, 48, 49, 0.5);
+      box-shadow: 
+        0 0 0 8px #660000,
+        0 20px 0 0 rgba(0, 0, 0, 0.3);
       position: relative;
-      z-index: 2;
+      z-index: 10;
     }
     
     h1 {
-      color: #e23031;
+      color: #FF4444;
       margin-bottom: 20px;
-      font-size: 2em;
-      text-shadow: 0 0 20px rgba(226, 48, 49, 0.8);
+      font-size: 1.8em;
+      text-shadow: 3px 3px 0 #000, 6px 6px 0 rgba(0, 0, 0, 0.5);
+      letter-spacing: 2px;
     }
     
     p {
-      color: #e0e0e0;
-      font-size: 1.1em;
+      color: #E0E0E0;
+      font-size: 0.9em;
       line-height: 1.6;
-      background: rgba(226, 48, 49, 0.2);
+      background: rgba(139, 0, 0, 0.3);
       padding: 20px;
-      border-radius: 10px;
-      border-left: 4px solid #e23031;
+      border: 3px solid #8B0000;
+      font-family: 'Courier New', monospace;
+      word-break: break-all;
     }
   </style>
 </head>
 <body>
-  <div class="mars"></div>
   <div class="error-container">
-    <h1>⚠️ เกิดข้อผิดพลาด!</h1>
+    <h1>💥 ข้อผิดพลาด! 💥</h1>
     <p>\${err.message}</p>
   </div>
 </body>
