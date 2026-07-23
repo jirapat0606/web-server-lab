@@ -680,7 +680,7 @@ let html = `
             <tbody>`;
         
         result.rows.forEach(row => {
-            html += \`<tr><td>\${row.student_id}</td><td>\${row.student_name}</td></tr>\`;
+html += `<tr><td>${row.student_id}</td><td>${row.student_name}</td></tr>`;
         });
 
         html += \`
