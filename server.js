@@ -1,3 +1,30 @@
+const http = require('http');
+const { Pool } = require('pg');
+
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+});
+
+const port = process.env.PORT || 3000;
+
+const server = http.createServer(async (req, res) => {
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+
+    try {
+        // 1. เชื่อมต่อฐานข้อมูลและดึงข้อมูลนักศึกษา
+        const client = await pool.connect();
+        const result = await client.query('SELECT * FROM students');
+        client.release();
+
+        // 2. วนลูปนำข้อมูล (result.rows) มาสร้างเป็นแถวของตาราง HTML
+        let studentRows = '';
+        result.rows.forEach(row => {
+            studentRows += `<tr><td>${row.student_id}</td><td>${row.tudent_name}</td></tr>`;
+        });
+
+        // 3. รวมสไตล์ Kawaii Blue และโครงสร้าง HTML ทั้งหมดไว้ในไฟล์เดียว
+        const html = `
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -16,7 +43,7 @@
             color: #334155;
         }
 
-        /* ☁️ Background Clouds & Shapes */
+        /* ☁️ Background Clouds */
         .cloud-bg { position: fixed; width: 100%; height: 100%; top: 0; left: 0; z-index: 0; pointer-events: none; }
         .cloud {
             position: absolute;
@@ -237,14 +264,14 @@
                 </tr>
             </thead>
             <tbody>
-                <!--STUDENT_ROWS-->
+                ${studentRows}
             </tbody>
         </table>
 
         <div class="stats">
             <div class="stat-box">
                 <div class="stat-label">TOTAL RECORDS</div>
-                <div class="stat-value"><!--TOTAL_RECORDS--></div>
+                <div class="stat-value">${result.rows.length}</div>
             </div>
             <div class="stat-box">
                 <div class="stat-label">STATUS</div>
@@ -268,9 +295,9 @@
     </div>
 
     <script>
-        // สร้างประกายวิ้งๆ (Sparkles) เมื่อขยับเมาส์
+        // ประกายวิ้งๆ เวลาขยับเมาส์
         document.addEventListener('mousemove', function(e) {
-            if (Math.random() < 0.1) { // สุ่มสร้าง ไม่ให้ถี่เกินไป
+            if (Math.random() < 0.1) {
                 const sparkle = document.createElement('div');
                 sparkle.innerHTML = '✨';
                 sparkle.style.position = 'fixed';
@@ -284,7 +311,7 @@
                 document.body.appendChild(sparkle);
                 
                 setTimeout(() => {
-                    sparkle.style.transform = `translate(${(Math.random() - 0.5) * 30}px, ${(Math.random() - 0.5) * 30}px) scale(0)`;
+                    sparkle.style.transform = \`translate(\${(Math.random() - 0.5) * 30}px, \${(Math.random() - 0.5) * 30}px) scale(0)\`;
                     sparkle.style.opacity = '0';
                 }, 50);
 
@@ -296,3 +323,16 @@
     </script>
 </body>
 </html>
+        `;
+
+        res.end(html);
+
+    } catch (err) {
+        console.error(err);
+        res.end(`<h1>เกิดข้อผิดพลาด!</h1><p>${err.message}</p>`);
+    }
+});
+
+server.listen(port, () => {
+    console.log(`Server is running on port: ${port}`);
+});
