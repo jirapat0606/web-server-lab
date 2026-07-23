@@ -1,155 +1,233 @@
-const http = require('http');
-const { Pool } = require('pg');
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
-
-const port = process.env.PORT || 3000;
-
-const server = http.createServer(async (req, res) => {
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-
-  let client;
-  try {
-    res.statusCode = 200;
-    client = await pool.connect();
-    const result = await client.query('SELECT * FROM students');
-
-    let html = `
 <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ฐานข้อมูลนักศึกษา - Galaxy</title>
+    <title>ฐานข้อมูลนักศึกษา - Kawaii Blue</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background: #000511;
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 50%, #bae6fd 100%);
             min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow: hidden;
+            font-family: 'Kanit', 'Segoe UI', sans-serif;
+            overflow-x: hidden;
             position: relative;
-            perspective: 1000px;
+            color: #334155;
         }
-        .galaxy-bg { position: fixed; width: 100%; height: 100%; top: 0; left: 0; z-index: 0; }
-        .galaxy-core {
-            position: absolute; width: 600px; height: 600px;
-            background: radial-gradient(circle at 35% 35%, rgba(255, 200, 100, 0.8) 0%, rgba(255, 150, 0, 0.6) 15%, rgba(200, 50, 200, 0.4) 35%, rgba(100, 0, 200, 0.2) 55%, transparent 100%);
-            filter: blur(80px); top: -100px; left: -100px; animation: coreRotate 45s linear infinite; box-shadow: 0 0 200px rgba(200, 50, 200, 0.3);
+
+        /* ☁️ Background Clouds & Shapes */
+        .cloud-bg { position: fixed; width: 100%; height: 100%; top: 0; left: 0; z-index: 0; pointer-events: none; }
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50px;
+            filter: blur(10px);
+            animation: floatCloud linear infinite;
         }
-        .galaxy-ring {
-            position: absolute; border: 3px solid; border-image: linear-gradient(45deg, rgba(100, 200, 255, 0.3), rgba(200, 50, 200, 0.3), rgba(100, 200, 255, 0.3)) 1;
-            border-radius: 50%; opacity: 0.2; animation: ringRotate linear infinite; filter: blur(1px);
+        .cloud-1 { width: 300px; height: 100px; top: 10%; left: -100px; animation-duration: 35s; }
+        .cloud-2 { width: 450px; height: 120px; top: 40%; right: -150px; animation-duration: 45s; animation-direction: reverse; }
+        .cloud-3 { width: 250px; height: 80px; bottom: 15%; left: -50px; animation-duration: 28s; }
+
+        @keyframes floatCloud {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100vw); }
         }
-        .ring-1 { width: 1000px; height: 1000px; top: 50%; left: 50%; transform: translate(-50%, -50%) rotateX(75deg); animation-duration: 30s; }
-        .ring-2 { width: 1400px; height: 1400px; top: 50%; left: 50%; transform: translate(-50%, -50%) rotateX(60deg); animation-duration: 40s; animation-direction: reverse; }
-        .ring-3 { width: 1800px; height: 1800px; top: 50%; left: 50%; transform: translate(-50%, -50%) rotateX(80deg); animation-duration: 50s; }
-        @keyframes coreRotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes ringRotate { 0% { transform: rotateZ(0deg); } 100% { transform: rotateZ(360deg); } }
-        .starfield { position: fixed; width: 100%; height: 100%; top: 0; left: 0; z-index: 1; pointer-events: none; }
-        .star { position: absolute; background: white; border-radius: 50%; filter: blur(0.5px); }
-        .star-small { width: 1px; height: 1px; opacity: 0.6; }
-        .star-medium { width: 1.5px; height: 1.5px; opacity: 0.8; box-shadow: 0 0 3px rgba(255, 255, 255, 0.8); }
-        .star-large { width: 2px; height: 2px; opacity: 1; box-shadow: 0 0 8px rgba(255, 255, 255, 0.9); }
-        .star-blue { background: #4da6ff; box-shadow: 0 0 10px rgba(77, 166, 255, 0.8); }
-        .star-red { background: #ff6b6b; box-shadow: 0 0 10px rgba(255, 107, 107, 0.8); }
-        .star-yellow { background: #ffd93d; box-shadow: 0 0 10px rgba(255, 217, 61, 0.8); }
-        .nebula { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.15; z-index: 2; mix-blend-mode: screen; }
-        .nebula-purple { width: 600px; height: 600px; background: radial-gradient(circle, rgb(180, 0, 255), transparent); top: 10%; right: 5%; animation: floatSlow 25s ease-in-out infinite; }
-        .nebula-blue { width: 500px; height: 500px; background: radial-gradient(circle, rgb(0, 150, 255), transparent); bottom: 10%; left: 5%; animation: floatSlow 30s ease-in-out infinite reverse; }
-        .nebula-pink { width: 700px; height: 700px; background: radial-gradient(circle, rgb(255, 50, 150), transparent); top: 50%; right: 20%; animation: floatSlow 35s ease-in-out infinite; }
-        @keyframes floatSlow { 0%, 100% { transform: translateY(0px) translateX(0px); } 50% { transform: translateY(50px) translateX(-30px); } }
-        .planet { position: fixed; border-radius: 50%; z-index: 3; box-shadow: 0 0 60px rgba(255, 150, 0, 0.4), inset -20px -20px 40px rgba(0, 0, 0, 0.6), inset 10px 10px 30px rgba(255, 255, 255, 0.1); }
-        .planet::before { content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%; background: inherit; filter: blur(2px); z-index: -1; opacity: 0.3; }
-        .jupiter { width: 180px; height: 180px; top: 8%; left: 5%; background: repeating-linear-gradient(90deg, #c88b3a 0px, #c88b3a 5px, #a67035 5px, #a67035 8px, #8b5a2b 8px, #8b5a2b 12px, #6b4423 12px, #6b4423 15px), radial-gradient(ellipse at 35% 35%, #ffcc99, #d4842e); animation: planetFloat 4s ease-in-out infinite; }
-        .saturn { width: 140px; height: 140px; top: 55%; right: 8%; background: radial-gradient(circle at 40% 40%, #ffd699, #d4a76a, #9d8455); animation: planetFloat 5s ease-in-out infinite 0.5s; }
-        .saturn::after { content: ''; position: absolute; width: 200px; height: 200px; border: 3px solid rgba(200, 150, 100, 0.3); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%) rotateX(75deg); box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5), 0 0 40px rgba(200, 150, 100, 0.2); }
-        .neptune { width: 160px; height: 160px; bottom: 15%; left: 12%; background: radial-gradient(circle at 30% 30%, #6bb6ff, #4169e1), radial-gradient(ellipse at 50% 50%, #003da5, #001a4d); animation: planetFloat 6s ease-in-out infinite 1s; }
-        .mercury { width: 80px; height: 80px; top: 20%; right: 18%; background: radial-gradient(circle at 35% 35%, #c0c0c0, #808080, #404040); animation: planetFloat 3s ease-in-out infinite 0.3s; }
-        @keyframes planetFloat { 0%, 100% { transform: translateY(0px) scale(1); } 50% { transform: translateY(30px) scale(1.02); } }
-        .cosmic-ray { position: fixed; width: 2px; height: 100px; background: linear-gradient(to bottom, rgba(100, 200, 255, 0.8), transparent); z-index: 2; animation: rayFloat 4s ease-in infinite; pointer-events: none; }
-        @keyframes rayFloat { 0% { opacity: 0; transform: translateY(-100px); } 10% { opacity: 1; } 90% { opacity: 1; } 100% { opacity: 0; transform: translateY(100vh); } }
+
+        /* ✨ Floating Kawaii Icons */
+        .floating-icon {
+            position: fixed;
+            font-size: 2rem;
+            z-index: 1;
+            opacity: 0.7;
+            animation: bounce 4s ease-in-out infinite;
+            pointer-events: none;
+        }
+        .icon-1 { top: 15%; left: 8%; animation-delay: 0s; }
+        .icon-2 { top: 25%; right: 10%; animation-delay: 1s; }
+        .icon-3 { bottom: 20%; left: 12%; animation-delay: 2s; }
+        .icon-4 { bottom: 15%; right: 15%; animation-delay: 1.5s; }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(10deg); }
+        }
+
+        /* 📦 Main Container */
         .container {
-            max-width: 1000px; margin: 50px auto; padding: 50px;
-            background: linear-gradient(135deg, rgba(20, 20, 50, 0.85) 0%, rgba(30, 10, 50, 0.85) 100%), repeating-linear-gradient(0deg, rgba(100, 150, 255, 0.03) 0px, rgba(100, 150, 255, 0.03) 2px, transparent 2px, transparent 4px);
-            border: 2px solid; border-image: linear-gradient(135deg, rgba(138, 43, 226, 0.8), rgba(0, 255, 255, 0.8)) 1;
-            border-radius: 20px; box-shadow: 0 0 60px rgba(138, 43, 226, 0.4), 0 0 120px rgba(30, 144, 255, 0.2), inset 0 0 50px rgba(100, 200, 255, 0.1);
-            position: relative; z-index: 10; backdrop-filter: blur(15px); transform: translateZ(0);
+            max-width: 900px;
+            margin: 60px auto;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.85);
+            border: 3px solid #7dd3fc;
+            border-radius: 30px;
+            box-shadow: 0 20px 40px rgba(56, 189, 248, 0.15), inset 0 0 15px rgba(255, 255, 255, 0.8);
+            position: relative;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
         }
-        .container::before { content: ''; position: absolute; inset: -2px; background: linear-gradient(45deg, #8a2be2, #00ffff, #8a2be2); border-radius: 20px; opacity: 0.3; filter: blur(8px); z-index: -1; animation: borderGlow 3s ease-in-out infinite; }
-        @keyframes borderGlow { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.6; } }
+        
+        .container:hover {
+            box-shadow: 0 25px 50px rgba(56, 189, 248, 0.25);
+        }
+
+        /* 🎀 Header Title */
         h1 {
-            color: #00ffff; text-align: center; margin-bottom: 40px; font-size: 3em;
-            text-shadow: 0 0 20px rgba(0, 255, 255, 0.8), 0 0 40px rgba(138, 43, 226, 0.6), 0 0 60px rgba(0, 150, 255, 0.4);
-            letter-spacing: 4px; font-weight: 300; background: linear-gradient(135deg, #00ffff, #8a2be2, #00ffff);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            color: #0284c7;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 0px #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
-        .emoji-title { display: inline-block; font-size: 1.5em; margin: 0 15px; filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.8)); animation: emojiPulse 2s ease-in-out infinite; }
-        @keyframes emojiPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-        table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 30px; box-shadow: 0 0 40px rgba(0, 255, 255, 0.3); border-radius: 12px; overflow: hidden; }
-        thead { background: linear-gradient(135deg, rgba(138, 43, 226, 0.7) 0%, rgba(30, 144, 255, 0.7) 100%); box-shadow: 0 0 30px rgba(138, 43, 226, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.1); position: relative; }
-        thead::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, #00ffff, transparent); box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); }
-        th { color: #ffffff; padding: 25px 20px; text-align: left; font-size: 1.15em; font-weight: 700; text-shadow: 0 0 15px rgba(0, 255, 255, 0.8); letter-spacing: 1.5px; position: relative; }
-        th::before { content: ''; position: absolute; left: 0; width: 3px; height: 100%; background: linear-gradient(to bottom, transparent, #00ffff, transparent); opacity: 0; animation: headerHighlight 2s ease-in-out infinite; }
-        @keyframes headerHighlight { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
-        td { padding: 22px 20px; border-bottom: 1px solid rgba(0, 255, 255, 0.15); color: #e0e0ff; font-size: 1em; background: rgba(30, 30, 80, 0.3); position: relative; overflow: hidden; }
-        td::before { content: ''; position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: linear-gradient(90deg, rgba(0, 255, 255, 0.1), transparent); transform: translateX(-100%); transition: transform 0.5s ease; }
-        tbody tr:hover td::before { transform: translateX(0); }
-        tbody tr { transition: all 0.3s ease; position: relative; }
-        tbody tr:hover { background: rgba(138, 43, 226, 0.4); box-shadow: inset 0 0 25px rgba(138, 43, 226, 0.3), 0 0 30px rgba(138, 43, 226, 0.2); transform: scale(1.01); }
-        tbody tr:nth-child(even) td { background: rgba(20, 20, 60, 0.5); }
-        tbody tr:last-child td { border-bottom: none; }
-        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 40px; padding-top: 30px; border-top: 2px solid rgba(0, 255, 255, 0.3); }
+        .emoji-title {
+            display: inline-block;
+            font-size: 1.2em;
+            animation: pulseEmoji 2s ease-in-out infinite;
+        }
+        @keyframes pulseEmoji {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        /* 📑 Table Styling */
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 20px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(186, 230, 253, 0.5);
+            background: #ffffff;
+        }
+        thead {
+            background: linear-gradient(135deg, #38bdf8 0%, #7dd3fc 100%);
+        }
+        th {
+            color: #ffffff;
+            padding: 18px 20px;
+            text-align: left;
+            font-size: 1.1em;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        td {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f0f9ff;
+            color: #475569;
+            font-size: 1em;
+            transition: all 0.2s ease;
+        }
+        tbody tr {
+            transition: background-color 0.2s ease;
+        }
+        tbody tr:hover {
+            background-color: #e0f2fe;
+        }
+        tbody tr:hover td {
+            color: #0369a1;
+            font-weight: 600;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* 📊 Stats Section */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 35px;
+            padding-top: 25px;
+            border-top: 2px dashed #bae6fd;
+        }
         .stat-box {
-            background: linear-gradient(135deg, rgba(138, 43, 236, 0.3) 0%, rgba(30, 144, 255, 0.2) 100%), repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(100, 150, 255, 0.05) 10px, rgba(100, 150, 255, 0.05) 20px);
-            border: 2px solid rgba(0, 255, 255, 0.4); border-radius: 12px; padding: 25px; text-align: center;
-            box-shadow: 0 0 25px rgba(0, 255, 255, 0.2), inset 0 0 20px rgba(100, 150, 255, 0.1);
-            position: relative; overflow: hidden; transition: all 0.3s ease;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+            border: 2px solid #38bdf8;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 8px 15px rgba(56, 189, 248, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        .stat-box::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), transparent); opacity: 0; transition: opacity 0.3s ease; }
-        .stat-box:hover { box-shadow: 0 0 40px rgba(0, 255, 255, 0.4), inset 0 0 30px rgba(138, 43, 226, 0.2); transform: translateY(-5px); }
-        .stat-box:hover::before { opacity: 1; }
-        .stat-label { color: #00ffff; font-size: 0.85em; text-shadow: 0 0 15px rgba(0, 255, 255, 0.6); margin-bottom: 10px; letter-spacing: 2px; font-weight: 600; }
-        .stat-value { color: #00ff88; font-size: 2.5em; font-weight: bold; text-shadow: 0 0 20px rgba(0, 255, 136, 0.8); }
-        .status { text-align: center; color: #00ff88; margin-top: 40px; font-size: 1.3em; font-weight: 700; text-shadow: 0 0 20px rgba(0, 255, 136, 0.8); animation: statusBreathe 2.5s ease-in-out infinite; letter-spacing: 1px; }
-        @keyframes statusBreathe { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.05); } }
-        .decoration { display: flex; justify-content: space-around; margin-top: 40px; font-size: 3em; gap: 20px; }
-        .decoration span { animation: decorationFloat 3.5s ease-in-out infinite; filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.8)); cursor: pointer; transition: transform 0.3s ease; }
-        .decoration span:hover { transform: scale(1.2) rotate(15deg); }
-        .decoration span:nth-child(1) { animation-delay: 0s; }
-        .decoration span:nth-child(2) { animation-delay: 0.2s; }
-        .decoration span:nth-child(3) { animation-delay: 0.4s; }
-        .decoration span:nth-child(4) { animation-delay: 0.6s; }
-        .decoration span:nth-child(5) { animation-delay: 0.8s; }
-        @keyframes decorationFloat { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-25px); } }
+        .stat-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(56, 189, 248, 0.18);
+        }
+        .stat-label {
+            color: #0284c7;
+            font-size: 0.85em;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        .stat-value {
+            color: #38bdf8;
+            font-size: 2.2em;
+            font-weight: bold;
+        }
+
+        /* 🌸 Status Text */
+        .status {
+            text-align: center;
+            color: #38bdf8;
+            margin-top: 30px;
+            font-size: 1.2em;
+            font-weight: 600;
+            animation: softBreathe 3s ease-in-out infinite;
+        }
+        @keyframes softBreathe {
+            0%, 100% { opacity: 0.7; transform: scale(0.98); }
+            50% { opacity: 1; transform: scale(1.02); }
+        }
+
+        /* 🧸 Bottom Decoration Icons */
+        .decoration {
+            display: flex;
+            justify-content: center;
+            margin-top: 25px;
+            font-size: 2.2em;
+            gap: 25px;
+        }
+        .decoration span {
+            display: inline-block;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+        .decoration span:hover {
+            transform: scale(1.4) rotate(15deg);
+        }
     </style>
 </head>
 <body>
-    <div class="galaxy-bg">
-        <div class="galaxy-core"></div>
-        <div class="galaxy-ring ring-1"></div>
-        <div class="galaxy-ring ring-2"></div>
-        <div class="galaxy-ring ring-3"></div>
-        <div class="nebula nebula-purple"></div>
-        <div class="nebula nebula-blue"></div>
-        <div class="nebula nebula-pink"></div>
+    <!-- Background Clouds -->
+    <div class="cloud-bg">
+        <div class="cloud cloud-1"></div>
+        <div class="cloud cloud-2"></div>
+        <div class="cloud cloud-3"></div>
     </div>
-    <div class="planet jupiter"></div>
-    <div class="planet saturn"></div>
-    <div class="planet neptune"></div>
-    <div class="planet mercury"></div>
-    <div class="starfield" id="starfield"></div>
+
+    <!-- Floating Kawaii Elements -->
+    <div class="floating-icon icon-1">☁️</div>
+    <div class="floating-icon icon-2">🎀</div>
+    <div class="floating-icon icon-3">🐬</div>
+    <div class="floating-icon icon-4">✨</div>
 
     <div class="container">
         <h1>
-            <span class="emoji-title">🌌</span>
+            <span class="emoji-title">🩵</span>
             ฐานข้อมูลนักศึกษา
-            <span class="emoji-title">🚀</span>
+            <span class="emoji-title">☁️</span>
         </h1>
         <table>
             <thead>
@@ -158,147 +236,63 @@ const server = http.createServer(async (req, res) => {
                     <th>👤 ชื่อ-นามสกุล</th>
                 </tr>
             </thead>
-            <tbody>`;
+            <tbody>
+                <!--STUDENT_ROWS-->
+            </tbody>
+        </table>
 
-    result.rows.forEach(row => {
-      html += `<tr><td>${row.student_id}</td><td>${row.tudent_name}</td></tr>`;
-    });
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-label">TOTAL RECORDS</div>
+                <div class="stat-value"><!--TOTAL_RECORDS--></div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">STATUS</div>
+                <div class="stat-value">✓</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">CONNECTION</div>
+                <div class="stat-value">LIVE</div>
+            </div>
+        </div>
 
-    html += `</tbody></table>
+        <div class="status">✨ Ready to serve cuteness! ✨</div>
 
-<div class="stats">
-    <div class="stat-box">
-        <div class="stat-label">⚡ TOTAL RECORDS</div>
-        <div class="stat-value">${result.rows.length}</div>
+        <div class="decoration">
+            <span>⭐</span>
+            <span>🧸</span>
+            <span>🎀</span>
+            <span>🐬</span>
+            <span>💎</span>
+        </div>
     </div>
-    <div class="stat-box">
-        <div class="stat-label">🛰️ STATUS</div>
-        <div class="stat-value">✓</div>
-    </div>
-    <div class="stat-box">
-        <div class="stat-label">🛰️ CONNECTION</div>
-        <div class="stat-value">LIVE</div>
-    </div>
-</div>
-
-<div class="status">✨ ✨</div>
-
-<div class="decoration">
-    <span>⭐</span>
-    <span>👁️</span>
-    <span>🐝</span>
-    <span>✏️</span>
-    <span>💎</span>
-</div>
-</div>
 
     <script>
-        function generateStars() {
-            const starfield = document.getElementById('starfield');
-            const colors = ['star-blue', 'star-red', 'star-yellow'];
-            const sizes = ['star-small', 'star-medium', 'star-large'];
-            
-            const numStars = 300;
-            for (let i = 0; i < numStars; i++) {
-                const star = document.createElement('div');
-                const size = sizes[Math.floor(Math.random() * sizes.length)];
-                const color = Math.random() > 0.7 ? colors[Math.floor(Math.random() * colors.length)] : '';
+        // สร้างประกายวิ้งๆ (Sparkles) เมื่อขยับเมาส์
+        document.addEventListener('mousemove', function(e) {
+            if (Math.random() < 0.1) { // สุ่มสร้าง ไม่ให้ถี่เกินไป
+                const sparkle = document.createElement('div');
+                sparkle.innerHTML = '✨';
+                sparkle.style.position = 'fixed';
+                sparkle.style.left = e.clientX + 'px';
+                sparkle.style.top = e.clientY + 'px';
+                sparkle.style.fontSize = (Math.random() * 15 + 10) + 'px';
+                sparkle.style.pointerEvents = 'none';
+                sparkle.style.zIndex = '999';
+                sparkle.style.transition = 'all 1s ease-out';
                 
-                star.className = 'star ' + size + (color ? ' ' + color : '');
-                star.style.left = Math.random() * 100 + '%';
-                star.style.top = Math.random() * 100 + '%';
-                star.style.animationDelay = Math.random() * 3 + 's';
-                starfield.appendChild(star);
+                document.body.appendChild(sparkle);
+                
+                setTimeout(() => {
+                    sparkle.style.transform = `translate(${(Math.random() - 0.5) * 30}px, ${(Math.random() - 0.5) * 30}px) scale(0)`;
+                    sparkle.style.opacity = '0';
+                }, 50);
+
+                setTimeout(() => {
+                    sparkle.remove();
+                }, 1000);
             }
-
-            function createRay() {
-                const ray = document.createElement('div');
-                ray.className = 'cosmic-ray';
-                ray.style.left = Math.random() * 100 + '%';
-                ray.style.animationDuration = (3 + Math.random() * 2) + 's';
-                ray.style.opacity = 0.3 + Math.random() * 0.4;
-                starfield.appendChild(ray);
-                setTimeout(() => ray.remove(), 5000);
-            }
-            setInterval(createRay, 2000);
-        }
-        generateStars();
-
-        const container = document.querySelector('.container');
-        setInterval(() => {
-            const particle = document.createElement('div');
-            particle.style.position = 'absolute';
-            particle.style.width = Math.random() * 4 + 2 + 'px';
-            particle.style.height = particle.style.width;
-            particle.style.background = ['#00ffff', '#8a2be2', '#00ff88'][Math.floor(Math.random() * 3)];
-            particle.style.borderRadius = '50%';
-            particle.style.boxShadow = '0 0 ' + (Math.random() * 10 + 5) + 'px currentColor';
-            particle.style.left = Math.random() * 100 + '%';
-            particle.style.top = Math.random() * 100 + '%';
-            particle.style.pointerEvents = 'none';
-            particle.style.filter = 'blur(0.5px)';
-            particle.style.zIndex = '4';
-            particle.style.opacity = Math.random() * 0.5 + 0.3;
-            
-            container.appendChild(particle);
-            
-            let opacity = parseFloat(particle.style.opacity);
-            const decay = setInterval(() => {
-                opacity -= 0.02;
-                particle.style.opacity = opacity;
-                if (opacity <= 0) {
-                    clearInterval(decay);
-                    particle.remove();
-                }
-            }, 50);
-        }, 400);
-
-        document.addEventListener('mousemove', (e) => {
-            const glow = document.querySelector('.container');
-            const rect = glow.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            glow.style.boxShadow = \`
-                0 0 60px rgba(138, 43, 226, 0.4),
-                0 0 120px rgba(30, 144, 255, 0.2),
-                inset 0 0 50px rgba(100, 200, 255, 0.1),
-                \${x}px \${y}px 80px rgba(0, 255, 255, 0.15)
-            \`;
         });
     </script>
 </body>
-</html>\`;
-    res.end(html);
-  } catch (err) {
-    console.error(err);
-    res.statusCode = 500;
-    res.end(`
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <title>Galaxy Error</title>
-    <style>
-        body { background: #000511; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: sans-serif; }
-        .error-container { background: rgba(100, 10, 50, 0.9); padding: 40px; border-radius: 12px; text-align: center; border: 1px solid #ff1493; }
-        h1 { color: #ff1493; margin-bottom: 10px; }
-        .error-details { background: rgba(0,0,0,0.5); padding: 10px; margin-top: 15px; border-radius: 5px; color: #00ffff; }
-    </style>
-</head>
-<body>
-    <div class="error-container">
-        <h1>SYSTEM ERROR</h1>
-        <p>เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล</p>
-        <div class="error-details">${err.message}</div>
-    </div>
-</body>
-</html>`);
-  } finally {
-    if (client) client.release();
-  }
-});
-
-server.listen(port, () => {
-  console.log(`Server is running on port: ${port}`);
-});
+</html>
