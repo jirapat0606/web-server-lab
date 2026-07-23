@@ -679,19 +679,17 @@ let html = `
             </thead>
             <tbody>`;
         
-        result.rows.forEach(row => {
-html += `<tr><td>${row.student_id}</td><td>${row.student_name}</td></tr>`;
-        });
+result.rows.forEach(row => {
+    html += `<tr><td>${row.student_id}</td><td>${row.tudent_name}</td></tr>`;
+});
 
-        html += \`
-            </tbody>
-        </table>
+html += `</tbody></table>`;
 
-        <div class="stats">
-            <div class="stat-box">
-                <div class="stat-label">⚡ TOTAL RECORDS</div>
-                <div class="stat-value">\${result.rows.length}</div>
-            </div>
+<div class="stats">
+    <div class="stat-box">
+        <div class="stat-label">⚡ TOTAL RECORDS</div>
+        <div class="stat-value">${result.rows.length}</div>
+    </div>
             <div class="stat-box">
                 <div class="stat-label">🛰️ STATUS</div>
                 <div class="stat-value">✓</div>
