@@ -677,10 +677,10 @@ let html = `
                     <th>👤 ชื่อ-นามสกุล</th>
                 </tr>
             </thead>
-            <tbody>`;
-        
+</tbody>`;
+
 result.rows.forEach(row => {
-    html += `<tr><td>${row.student_id}</td><td>${row.tudent_name}</td></tr>`;
+    html += `<tr><td>${row.student_id}</td><td>${row.student_name}</td></tr>`;
 });
 
 html += `</tbody></table>
