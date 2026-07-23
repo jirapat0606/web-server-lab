@@ -320,7 +320,7 @@ let html = `
             </tbody>
         </table>
 
-        <div class="status">✨ ดึงข้อมูลสำเร็จ! ✨</div>
+        <div class="status">✨ ✨</div>
 
         <div class="decoration">
             <span>🌈</span>
