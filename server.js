@@ -22,7 +22,7 @@ let html = `
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ฐานขอมูลนักศึกษา - Minecraft Style</title>
+  <title>ฐานขอมูลนักศึกษา - Sky Theme</title>
   <style>
     * {
       margin: 0;
@@ -31,124 +31,142 @@ let html = `
     }
     
     body {
-      font-family: 'Minecraft', 'Press Start 2P', monospace;
-      background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 100%);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 50%, #B0E0E6 100%);
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      padding: 40px 20px 20px;
+      padding: 60px 20px 20px;
       position: relative;
       overflow-x: hidden;
     }
     
-    /* Sky */
+    /* Sky background */
     body::before {
       content: '';
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
-      height: 60%;
-      background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 100%);
+      height: 100%;
+      background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 50%, #B0E0E6 100%);
       z-index: -2;
     }
     
-    /* Grass and dirt ground */
-    body::after {
-      content: '';
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 40%;
-      background: linear-gradient(180deg, #90EE90 0%, #7CB342 50%, #6D4C41 100%);
-      z-index: -2;
-    }
-    
-    /* Clouds */
+    /* Animated clouds */
     .cloud {
       position: fixed;
       background: white;
-      border-radius: 50px;
-      opacity: 0.9;
+      border-radius: 100px;
+      opacity: 0.85;
       z-index: 1;
+      box-shadow: 0 4px 15px rgba(135, 206, 235, 0.3);
     }
     
     .cloud1 {
-      width: 120px;
-      height: 40px;
-      top: 10%;
+      width: 140px;
+      height: 50px;
+      top: 8%;
       left: 5%;
-      animation: float 20s infinite;
+      animation: float 25s infinite;
     }
     
     .cloud2 {
-      width: 150px;
-      height: 50px;
-      top: 20%;
-      right: 5%;
-      animation: float 25s infinite reverse;
+      width: 180px;
+      height: 60px;
+      top: 25%;
+      right: 8%;
+      animation: float 30s infinite reverse;
     }
     
     .cloud3 {
-      width: 100px;
-      height: 35px;
-      top: 15%;
+      width: 120px;
+      height: 45px;
+      top: 18%;
       left: 50%;
-      animation: float 22s infinite;
+      animation: float 28s infinite;
+    }
+    
+    .cloud4 {
+      width: 160px;
+      height: 55px;
+      top: 35%;
+      left: 15%;
+      animation: float 32s infinite reverse;
     }
     
     @keyframes float {
-      0%, 100% { transform: translateX(0); }
-      50% { transform: translateX(30px); }
+      0%, 100% { transform: translateX(0px); }
+      50% { transform: translateX(50px); }
+    }
+    
+    /* Sun */
+    .sun {
+      position: fixed;
+      width: 80px;
+      height: 80px;
+      top: 10%;
+      right: 10%;
+      background: radial-gradient(circle at 30% 30%, #FFD700, #FFA500);
+      border-radius: 50%;
+      z-index: 0;
+      box-shadow: 0 0 50px rgba(255, 200, 0, 0.6);
+      animation: gentle-spin 20s linear infinite;
+    }
+    
+    @keyframes gentle-spin {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(5deg); }
     }
     
     .container {
-      background: #1a1a1a;
-      border: 4px solid #8B4513;
-      padding: 40px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 248, 255, 0.95) 100%);
+      border: none;
+      border-radius: 20px;
+      padding: 50px;
       max-width: 900px;
       width: 100%;
       position: relative;
       z-index: 10;
       box-shadow: 
-        0 0 0 8px #654321,
-        0 20px 0 0 rgba(0, 0, 0, 0.3);
-      border-image: linear-gradient(135deg, #D2B48C, #8B4513) 1;
+        0 10px 40px rgba(135, 206, 235, 0.3),
+        0 0 0 1px rgba(135, 206, 235, 0.1);
+      backdrop-filter: blur(10px);
     }
     
     h1 {
-      color: #FFD700;
+      color: #1E90FF;
       text-align: center;
       margin-bottom: 30px;
-      font-size: 2em;
-      text-shadow: 3px 3px 0 #000, 6px 6px 0 rgba(0, 0, 0, 0.5);
-      letter-spacing: 3px;
-      font-weight: bold;
+      font-size: 2.2em;
+      text-shadow: 2px 2px 4px rgba(30, 144, 255, 0.15);
+      letter-spacing: 1px;
+      font-weight: 600;
     }
     
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
-      background: #2d2d2d;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
     }
     
     thead {
-      background: linear-gradient(180deg, #CD853F 0%, #8B4513 100%);
-      color: #FFFACD;
-      border: 3px solid #654321;
+      background: linear-gradient(180deg, #1E90FF 0%, #4169E1 100%);
+      color: white;
+      border: none;
     }
     
     th {
-      padding: 15px;
+      padding: 18px;
       text-align: left;
-      font-weight: bold;
+      font-weight: 600;
       font-size: 1em;
-      letter-spacing: 2px;
-      text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
-      border-right: 2px solid #654321;
+      letter-spacing: 0.5px;
+      border-right: 1px solid rgba(255, 255, 255, 0.2);
     }
     
     th:last-child {
@@ -156,58 +174,42 @@ let html = `
     }
     
     tbody tr {
-      border-bottom: 3px solid #654321;
-      transition: all 0.1s ease;
-      background: #2d2d2d;
+      border-bottom: 1px solid #E0F0FF;
+      transition: all 0.3s ease;
+      background: white;
     }
     
     tbody tr:hover {
-      background: #3a3a3a;
+      background: linear-gradient(90deg, #F0F8FF 0%, #E0F6FF 100%);
       transform: translateY(-2px);
-      box-shadow: inset 0 0 10px rgba(205, 133, 63, 0.3);
-    }
-    
-    tbody tr:nth-child(odd) {
-      background: #1a1a1a;
-    }
-    
-    tbody tr:nth-child(odd):hover {
-      background: #252525;
+      box-shadow: inset 0 2px 8px rgba(135, 206, 235, 0.2);
     }
     
     tbody tr:last-child {
-      border-bottom: 3px solid #654321;
+      border-bottom: none;
     }
     
     td {
-      padding: 15px;
-      color: #E0E0E0;
+      padding: 16px 18px;
+      color: #333;
       font-size: 0.95em;
-      border-right: 1px solid #654321;
-      font-family: 'Courier New', monospace;
+      border-right: 1px solid #E0F0FF;
+      font-family: 'Segoe UI', sans-serif;
     }
     
     td:last-child {
       border-right: none;
     }
     
-    /* Pixel art style */
-    @supports (-webkit-appearance:none) {
-      th, td {
-        image-rendering: pixelated;
-        image-rendering: -moz-crisp-edges;
-        image-rendering: crisp-edges;
-      }
-    }
-    
+    /* Responsive design */
     @media (max-width: 600px) {
       .container {
-        padding: 20px;
-        border-width: 3px;
+        padding: 25px;
+        border-radius: 15px;
       }
       
       h1 {
-        font-size: 1.4em;
+        font-size: 1.6em;
       }
       
       table {
@@ -215,23 +217,31 @@ let html = `
       }
       
       th, td {
-        padding: 10px;
+        padding: 12px;
         font-size: 0.9em;
       }
       
-      .cloud1 { width: 80px; height: 30px; }
-      .cloud2 { width: 100px; height: 35px; }
-      .cloud3 { width: 70px; height: 25px; }
+      .cloud1 { width: 100px; height: 35px; }
+      .cloud2 { width: 130px; height: 45px; }
+      .cloud3 { width: 90px; height: 30px; }
+      .cloud4 { width: 110px; height: 40px; }
+      
+      .sun {
+        width: 60px;
+        height: 60px;
+      }
     }
   </style>
 </head>
 <body>
+  <div class="sun"></div>
   <div class="cloud cloud1"></div>
   <div class="cloud cloud2"></div>
   <div class="cloud cloud3"></div>
+  <div class="cloud cloud4"></div>
   
   <div class="container">
-    <h1>⛏️ ฐานขอมูลนักศึกษา ⛏️</h1>
+    <h1>☁️ ฐานขอมูลนักศึกษา ☁️</h1>
     <table>
       <thead>
         <tr>
@@ -265,7 +275,7 @@ res.end(\`
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>เกิดข้อผิดพลาด - Minecraft</title>
+  <title>เกิดข้อผิดพลาด</title>
   <style>
     * {
       margin: 0;
@@ -274,8 +284,8 @@ res.end(\`
     }
     
     body {
-      font-family: 'Minecraft', 'Press Start 2P', monospace;
-      background: linear-gradient(180deg, #FF6B6B 0%, #FFB3B3 100%);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(180deg, #FFB6C1 0%, #FFC0CB 50%, #FFB0C0 100%);
       min-height: 100vh;
       display: flex;
       justify-content: center;
@@ -291,50 +301,42 @@ res.end(\`
       top: 0;
       left: 0;
       right: 0;
-      height: 60%;
-      background: linear-gradient(180deg, #FF6B6B 0%, #FFB3B3 100%);
-      z-index: -1;
-    }
-    
-    body::after {
-      content: '';
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 40%;
-      background: linear-gradient(180deg, #FFB3B3 0%, #D32F2F 50%, #8B0000 100%);
+      height: 100%;
+      background: linear-gradient(180deg, #FFB6C1 0%, #FFC0CB 50%, #FFB0C0 100%);
       z-index: -1;
     }
     
     .error-container {
-      background: #1a1a1a;
-      border: 4px solid #8B0000;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 240, 245, 0.95) 100%);
+      border: 2px solid #FF69B4;
+      border-radius: 15px;
       padding: 40px;
       max-width: 600px;
       text-align: center;
       box-shadow: 
-        0 0 0 8px #660000,
-        0 20px 0 0 rgba(0, 0, 0, 0.3);
+        0 10px 40px rgba(255, 105, 180, 0.2),
+        0 0 0 1px rgba(255, 105, 180, 0.1);
       position: relative;
       z-index: 10;
     }
     
     h1 {
-      color: #FF4444;
+      color: #FF1493;
       margin-bottom: 20px;
       font-size: 1.8em;
-      text-shadow: 3px 3px 0 #000, 6px 6px 0 rgba(0, 0, 0, 0.5);
-      letter-spacing: 2px;
+      text-shadow: 2px 2px 4px rgba(255, 20, 147, 0.15);
+      letter-spacing: 1px;
+      font-weight: 600;
     }
     
     p {
-      color: #E0E0E0;
+      color: #333;
       font-size: 0.9em;
       line-height: 1.6;
-      background: rgba(139, 0, 0, 0.3);
+      background: rgba(255, 192, 203, 0.3);
       padding: 20px;
-      border: 3px solid #8B0000;
+      border: 2px solid #FFB6C1;
+      border-radius: 8px;
       font-family: 'Courier New', monospace;
       word-break: break-all;
     }
@@ -342,7 +344,7 @@ res.end(\`
 </head>
 <body>
   <div class="error-container">
-    <h1>💥 ข้อผิดพลาด! 💥</h1>
+    <h1>⚠️ ข้อผิดพลาด ⚠️</h1>
     <p>\${err.message}</p>
   </div>
 </body>
