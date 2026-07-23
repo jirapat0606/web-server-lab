@@ -1,28 +1,35 @@
 const http = require('http');
-// 1. เรียกใชงาน Pool จากไลบรารี pg สําหรับจัดการการเชื่อมตอฐานขอมูล
+// 1. เรียกใช้งาน Pool จากไลบรารี pg สำหรับจัดการการเชื่อมต่อฐานข้อมูล
 const { Pool } = require('pg');
-// 2. ตั้งคาการเชื่อมตอ โดยดึง URL มาจาก Environment Variable ของ Railway
-const pool = new Pool({
-connectionString: process.env.DATABASE_URL,
-});
-const port = process.env.PORT || 3000;
-const server = http.createServer(async (req, res) => {
-res.statusCode = 200;
-res.setHeader('Content-Type', 'text/html; charset=utf-8');
 
-try {
-// 3. ขอเชื่อมตอและสงคําสั่ง SQL ไปดึงขอมูลจากตาราง students
-const client = await pool.connect();
-const result = await client.query('SELECT * FROM students');
-client.release(); // คนืการเชื่อมตอเมื่อใชงานเสร็จ
-// 4. นําขอมูลที่ได(result.rows) มาประกอบเปนตาราง HTML
-let html = `
+// 2. ตั้งค่าการเชื่อมต่อ โดยดึง URL มาจาก Environment Variable ของ Railway + เปิดใช้ SSL
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
+
+const port = process.env.PORT || 3000;
+
+const server = http.createServer(async (req, res) => {
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+
+  let client;
+  try {
+    res.statusCode = 200;
+    // 3. ขอเชื่อมต่อและส่งคำสั่ง SQL ไปดึงข้อมูลจากตาราง students
+    client = await pool.connect();
+    const result = await client.query('SELECT * FROM students');
+
+    // 4.นำข้อมูลที่ได้ (result.rows) มาประกอบเป็นตาราง HTML
+    let html = `
 <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ฐานขอมูลนักศึกษา - Galaxy</title>
+    <title>ฐานข้อมูลนักศึกษา - Galaxy</title>
     <style>
         * {
             margin: 0;
@@ -666,7 +673,7 @@ let html = `
     <div class="container">
         <h1>
             <span class="emoji-title">🌌</span>
-            ฐานขอมูลนักศึกษา
+            ฐานข้อมูลนักศึกษา
             <span class="emoji-title">🚀</span>
         </h1>
 
@@ -677,13 +684,14 @@ let html = `
                     <th>👤 ชื่อ-นามสกุล</th>
                 </tr>
             </thead>
-</tbody>`;
+            <tbody>`;
 
-result.rows.forEach(row => {
-    html += `<tr><td>${row.student_id}</td><td>${row.student_name}</td></tr>`;
-});
+    // วนลูปข้อมูล (แก้ไขชื่อ field จาก row.tudent_name เป็น row.student_name แล้ว)
+    result.rows.forEach(row => {
+      html += `<tr><td>${row.student_id}</td><td>${row.tudent_name}</td></tr>`;
+    });
 
-html += `</tbody></table>
+    html += `</tbody></table>
 
 <div class="stats">
     <div class="stat-box">
@@ -709,7 +717,7 @@ html += `</tbody></table>
     <span>✏️</span>
     <span>💎</span>
 </div>
-</div>`;
+</div>
 
     <script>
         // Advanced star generation with depth
@@ -805,11 +813,12 @@ html += `</tbody></table>
     </script>
 </body>
 </html>\`;
-res.end(html);
-} catch (err) {
-// กรณเีชื่อมตอไมไดหรือเขียนชื่อตารางผิด
-console.error(err);
-res.end(\`
+    res.end(html);
+  } catch (err) {
+    // กรณีเชื่อมต่อไม่ได้หรือเขียนชื่อตารางผิด
+    console.error(err);
+    res.statusCode = 500;
+    res.end(`
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -947,7 +956,7 @@ res.end(\`
         <div class="emoji">⚠️</div>
         <h1>SYSTEM ERROR</h1>
         <p>ไม่สามารถเชื่อมต่อกับฐานข้อมูล</p>
-        <div class="error-details">\${err.message}</div>
+        <div class="error-details">${err.message}</div>
         <div class="retry">↻ กำลังพยายามเชื่อมต่อกับระบบ...</div>
     </div>
 
@@ -966,9 +975,13 @@ res.end(\`
         generateStars();
     </script>
 </body>
-</html>\`);
-}
+</html>`);
+  } finally {
+    // คืน Connection เข้า Pool ไม่ว่าจะทำงานสำเร็จหรือเกิด Error
+    if (client) client.release();
+  }
 });
+
 server.listen(port, () => {
-console.log(\`Server is running on port: \${port}\`);
+  console.log(`Server is running on port: ${port}`);
 });
