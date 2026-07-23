@@ -350,7 +350,7 @@ let html = `
 
         <div class="power-up">LEVEL UP! ✓</div>
 
-        <div class="status">★ ดึงข้อมูลสำเร็จ! ★</div>
+        <div class="status">★ Game Over ! ★</div>
 
         <div class="decoration">
             <span>⭐</span>
