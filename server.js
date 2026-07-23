@@ -683,33 +683,33 @@ result.rows.forEach(row => {
     html += `<tr><td>${row.student_id}</td><td>${row.tudent_name}</td></tr>`;
 });
 
-html += `</tbody></table>`;
+html += `</tbody></table>
 
 <div class="stats">
     <div class="stat-box">
         <div class="stat-label">⚡ TOTAL RECORDS</div>
         <div class="stat-value">${result.rows.length}</div>
     </div>
-            <div class="stat-box">
-                <div class="stat-label">🛰️ STATUS</div>
-                <div class="stat-value">✓</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-label">📡 CONNECTION</div>
-                <div class="stat-value">LIVE</div>
-            </div>
-        </div>
-
-        <div class="status">✨  ✨</div>
-
-        <div class="decoration">
-            <span>⭐</span>
-            <span>💫</span>
-            <span>✨</span>
-            <span>🌠</span>
-            <span>💎</span>
-        </div>
+    <div class="stat-box">
+        <div class="stat-label">🛰️ STATUS</div>
+        <div class="stat-value">✓</div>
     </div>
+    <div class="stat-box">
+        <div class="stat-label">🛰️ CONNECTION</div>
+        <div class="stat-value">LIVE</div>
+    </div>
+</div>
+
+<div class="status">✨ ✨</div>
+
+<div class="decoration">
+    <span>⭐</span>
+    <span>👁️</span>
+    <span>🐝</span>
+    <span>✏️</span>
+    <span>💎</span>
+</div>
+</div>`;
 
     <script>
         // Advanced star generation with depth
